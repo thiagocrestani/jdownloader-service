@@ -14,7 +14,7 @@ import jd.plugins.PluginOptional;
 import jd.utils.JDUtilities;
 import jd.utils.locale.JDL;
 
-import com.sun.awt.AWTUtilities;
+//import com.sun.awt.AWTUtilities;
 
 @OptionalPlugin(rev = "$Revision: 12612 $", defaultEnabled = true, id = "infobar", hasGui = true, interfaceversion = 7)
 public class JDInfoBar extends PluginOptional {
@@ -87,7 +87,7 @@ public class JDInfoBar extends PluginOptional {
 
             @Override
             public Object runSave() {
-                AWTUtilities.setWindowOpacity(infoDialog, (float) (newValue / 100.0));
+//                AWTUtilities.setWindowOpacity(infoDialog, (float) (newValue / 100.0));
                 return null;
             }
 
