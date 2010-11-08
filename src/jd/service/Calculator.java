@@ -23,6 +23,11 @@ package jd.service;
  *
  */
 public class Calculator {
+    private volatile int calls = 0;
+    public int calls() {
+        calls++;
+        return calls;
+    }
     public int add(int i1, int i2) {
         return i1 + i2;
     }

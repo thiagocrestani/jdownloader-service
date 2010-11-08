@@ -23,6 +23,7 @@ import java.util.Vector;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.apache.xmlrpc.server.PropertyHandlerMapping;
+import org.apache.xmlrpc.server.XmlRpcServerConfigImpl;
 import org.apache.xmlrpc.webserver.WebServer;
 
 public class ServletServer {
@@ -32,8 +33,18 @@ public class ServletServer {
         WebServer webServer = new WebServer(port);
         
         PropertyHandlerMapping pMapping = new PropertyHandlerMapping();
+        
+        Calculator echo = new Calculator();
+        pMapping.setRequestProcessorFactoryFactory(new CalculatorRequestProcessorFactoryFactory(echo));
+        pMapping.setVoidMethodEnabled(true);
+        
         pMapping.addHandler("Calculator", Calculator.class);
+        
         webServer.getXmlRpcServer().setHandlerMapping(pMapping);
+        
+        XmlRpcServerConfigImpl serverConfig = (XmlRpcServerConfigImpl) webServer.getXmlRpcServer().getConfig();
+        serverConfig.setEnabledForExtensions(true);
+        serverConfig.setContentLengthOptional(false);
         
         Thread clt = new Thread(new Runnable() {
             /* (non-Javadoc)
@@ -58,11 +69,11 @@ public class ServletServer {
                         });
                         
                         Vector<Integer> params = new Vector<Integer> ();
-                        params.addElement (3);
-                        params.addElement(4);
+                        /*params.addElement (3);
+                        params.addElement(4);*/
                         
                         // print result
-                        System.out.println(xmlrpc.execute ("Calculator.add", params));
+                        System.out.println(xmlrpc.execute ("Calculator.calls", params));
                     }
                     catch(Exception e) {
                         System.out.println(e);
