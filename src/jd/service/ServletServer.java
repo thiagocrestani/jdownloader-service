@@ -16,15 +16,72 @@
 
 package jd.service;
 
-import org.apache.xmlrpc.webserver.ServletWebServer;
-import org.apache.xmlrpc.webserver.XmlRpcServlet;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Vector;
+
+import org.apache.xmlrpc.client.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
+import org.apache.xmlrpc.server.PropertyHandlerMapping;
+import org.apache.xmlrpc.webserver.WebServer;
 
 public class ServletServer {
-    private static final int port = 8080;
+    private static final int port = 8081;
 
     public static void main(String[] args) throws Exception {
-        XmlRpcServlet servlet = new XmlRpcServlet();
-        ServletWebServer webServer = new ServletWebServer(servlet, port);
-        webServer.start();
+        WebServer webServer = new WebServer(port);
+        
+        PropertyHandlerMapping pMapping = new PropertyHandlerMapping();
+        pMapping.addHandler("Calculator", Calculator.class);
+        webServer.getXmlRpcServer().setHandlerMapping(pMapping);
+        
+        Thread clt = new Thread(new Runnable() {
+            /* (non-Javadoc)
+             * @see java.lang.Runnable#run()
+             */
+            public void run() {
+                while(true) {
+                    try {
+                        XmlRpcClient xmlrpc = new XmlRpcClient();
+                        xmlrpc.setConfig(new XmlRpcClientConfigImpl() {
+                            private static final long serialVersionUID = -130700980053934808L;
+                            @Override
+                            public URL getServerURL() {
+                                try {
+                                    return new URL("http", "localhost", port, "");
+                                } catch (MalformedURLException e) {
+                                    e.printStackTrace();
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                            
+                        });
+                        
+                        Vector<Integer> params = new Vector<Integer> ();
+                        params.addElement (3);
+                        params.addElement(4);
+                        
+                        // print result
+                        System.out.println(xmlrpc.execute ("Calculator.add", params));
+                    }
+                    catch(Exception e) {
+                        System.out.println(e);
+                    }
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            
+        });
+        
+        try {
+            clt.start();
+            webServer.start();
+        } finally {
+            //webServer.shutdown();
+        }
     }
 }
