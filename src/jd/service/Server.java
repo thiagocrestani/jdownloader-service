@@ -37,7 +37,7 @@ public class Server {
     
     public Server(int port) throws XmlRpcException {
         this.port = port;
-        setup(port);
+        server = setup(port);
     }
     
     /**
