@@ -24,12 +24,12 @@ import org.apache.xmlrpc.server.RequestProcessorFactoryFactory;
  * @author Dominik Psenner <dpsenner@gmail.com>
  * 
  */
-public class CalculatorRequestProcessorFactoryFactory implements RequestProcessorFactoryFactory {
+public class ServerRequestProcessorFactoryFactory implements RequestProcessorFactoryFactory {
     private final RequestProcessorFactory factory = new CalculatorRequestProcessorFactory();
-    private final CalculatorImpl  echo;
+    private final ServiceImpl  service;
 
-    public CalculatorRequestProcessorFactoryFactory(CalculatorImpl echo) {
-        this.echo = echo;
+    public ServerRequestProcessorFactoryFactory(ServiceImpl echo) {
+        this.service = echo;
     }
 
     @SuppressWarnings("unchecked")
@@ -39,7 +39,7 @@ public class CalculatorRequestProcessorFactoryFactory implements RequestProcesso
 
     private class CalculatorRequestProcessorFactory implements RequestProcessorFactory {
         public Object getRequestProcessor(XmlRpcRequest xmlRpcRequest) throws XmlRpcException {
-            return echo;
+            return service;
         }
     }
 }

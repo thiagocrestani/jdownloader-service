@@ -54,7 +54,7 @@ public class Client {
                         
                         ClientFactory factory = new ClientFactory(xmlrpcClient);
                         
-                        Calculator proxy = (Calculator) factory.newInstance(Calculator.class);
+                        Service proxy = (Service) factory.newInstance(Service.class);
                         
                         // print result
                         System.out.println(proxy.calls());

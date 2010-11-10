@@ -22,7 +22,7 @@ package jd.service;
  * @author Dominik Psenner <dpsenner@gmail.com>
  *
  */
-public class CalculatorImpl implements Calculator {
+public class ServiceImpl implements Service {
     private volatile int calls = 0;
     public int calls() {
         calls++;

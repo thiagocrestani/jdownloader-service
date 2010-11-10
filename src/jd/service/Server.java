@@ -71,16 +71,16 @@ public class Server {
         PropertyHandlerMapping pMapping = new PropertyHandlerMapping();
         pMapping.setRequestProcessorFactoryFactory(createFactoryFactory());
         pMapping.setVoidMethodEnabled(true);
-        pMapping.addHandler(Calculator.class.getName(), CalculatorImpl.class);
+        pMapping.addHandler(Service.class.getName(), ServiceImpl.class);
         return pMapping;
     }
 
     /**
      * @return
      */
-    private CalculatorRequestProcessorFactoryFactory createFactoryFactory() {
-        CalculatorImpl calculator = new CalculatorImpl();
-        CalculatorRequestProcessorFactoryFactory factoryFactory = new CalculatorRequestProcessorFactoryFactory(calculator);
+    private ServerRequestProcessorFactoryFactory createFactoryFactory() {
+        ServiceImpl calculator = new ServiceImpl();
+        ServerRequestProcessorFactoryFactory factoryFactory = new ServerRequestProcessorFactoryFactory(calculator);
         return factoryFactory;
     }
     

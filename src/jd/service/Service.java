@@ -20,7 +20,7 @@ package jd.service;
  * @author Dominik Psenner <dpsenner@gmail.com>
  *
  */
-public interface Calculator {
+public interface Service {
     /**
      * a simple method that does a invoke and returns how often
      * the invoke was called. Ideally it should be incrementally. ;-)
