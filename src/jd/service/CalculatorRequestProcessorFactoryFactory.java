@@ -26,9 +26,9 @@ import org.apache.xmlrpc.server.RequestProcessorFactoryFactory;
  */
 public class CalculatorRequestProcessorFactoryFactory implements RequestProcessorFactoryFactory {
     private final RequestProcessorFactory factory = new CalculatorRequestProcessorFactory();
-    private final Calculator  echo;
+    private final CalculatorImpl  echo;
 
-    public CalculatorRequestProcessorFactoryFactory(Calculator echo) {
+    public CalculatorRequestProcessorFactoryFactory(CalculatorImpl echo) {
         this.echo = echo;
     }
 
@@ -39,7 +39,6 @@ public class CalculatorRequestProcessorFactoryFactory implements RequestProcesso
 
     private class CalculatorRequestProcessorFactory implements RequestProcessorFactory {
         public Object getRequestProcessor(XmlRpcRequest xmlRpcRequest) throws XmlRpcException {
-            System.out.println("getting instance");
             return echo;
         }
     }

@@ -16,29 +16,28 @@
 
 package jd.service;
 
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Vector;
 
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
+import org.apache.xmlrpc.client.util.ClientFactory;
 import org.apache.xmlrpc.server.PropertyHandlerMapping;
 import org.apache.xmlrpc.server.XmlRpcServerConfigImpl;
 import org.apache.xmlrpc.webserver.WebServer;
 
 public class ServletServer {
-    private static final int port = 8081;
+    private static final int port = 8080;
 
     public static void main(String[] args) throws Exception {
         WebServer webServer = new WebServer(port);
         
         PropertyHandlerMapping pMapping = new PropertyHandlerMapping();
         
-        Calculator echo = new Calculator();
+        CalculatorImpl echo = new CalculatorImpl();
         pMapping.setRequestProcessorFactoryFactory(new CalculatorRequestProcessorFactoryFactory(echo));
         pMapping.setVoidMethodEnabled(true);
         
-        pMapping.addHandler("Calculator", Calculator.class);
+        pMapping.addHandler(Calculator.class.getName(), CalculatorImpl.class);
         
         webServer.getXmlRpcServer().setHandlerMapping(pMapping);
         
@@ -53,27 +52,18 @@ public class ServletServer {
             public void run() {
                 while(true) {
                     try {
-                        XmlRpcClient xmlrpc = new XmlRpcClient();
-                        xmlrpc.setConfig(new XmlRpcClientConfigImpl() {
-                            private static final long serialVersionUID = -130700980053934808L;
-                            @Override
-                            public URL getServerURL() {
-                                try {
-                                    return new URL("http", "localhost", port, "");
-                                } catch (MalformedURLException e) {
-                                    e.printStackTrace();
-                                    throw new RuntimeException(e);
-                                }
-                            }
-                            
-                        });
+                        XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+                        config.setServerURL(new URL("http", "localhost", port, ""));
                         
-                        Vector<Integer> params = new Vector<Integer> ();
-                        /*params.addElement (3);
-                        params.addElement(4);*/
+                        XmlRpcClient xmlrpcClient = new XmlRpcClient();
+                        xmlrpcClient.setConfig(config);
+                        
+                        ClientFactory factory = new ClientFactory(xmlrpcClient);
+                        
+                        Calculator proxy = (Calculator) factory.newInstance(Calculator.class);
                         
                         // print result
-                        System.out.println(xmlrpc.execute ("Calculator.calls", params));
+                        System.out.println(proxy.calls());
                     }
                     catch(Exception e) {
                         System.out.println(e);
