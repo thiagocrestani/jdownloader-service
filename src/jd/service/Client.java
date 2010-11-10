@@ -21,30 +21,24 @@ import java.net.URL;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.apache.xmlrpc.client.util.ClientFactory;
-import org.apache.xmlrpc.server.PropertyHandlerMapping;
-import org.apache.xmlrpc.server.XmlRpcServerConfigImpl;
-import org.apache.xmlrpc.webserver.WebServer;
 
-public class ServletServer {
-    private static final int port = 8080;
-
-    public static void main(String[] args) throws Exception {
-        WebServer webServer = new WebServer(port);
-        
-        PropertyHandlerMapping pMapping = new PropertyHandlerMapping();
-        
-        CalculatorImpl echo = new CalculatorImpl();
-        pMapping.setRequestProcessorFactoryFactory(new CalculatorRequestProcessorFactoryFactory(echo));
-        pMapping.setVoidMethodEnabled(true);
-        
-        pMapping.addHandler(Calculator.class.getName(), CalculatorImpl.class);
-        
-        webServer.getXmlRpcServer().setHandlerMapping(pMapping);
-        
-        XmlRpcServerConfigImpl serverConfig = (XmlRpcServerConfigImpl) webServer.getXmlRpcServer().getConfig();
-        serverConfig.setEnabledForExtensions(true);
-        serverConfig.setContentLengthOptional(false);
-        
+/**
+ * @author Dominik Psenner <dpsenner@gmail.com>
+ *
+ */
+public class Client {
+    private int port = 8080;
+    private Thread worker; 
+    
+    public Client() {
+        this(8080);
+    }
+    
+    public Client(int port) {
+        worker = setup(port);
+    }
+    
+    private Thread setup(final int port) {
         Thread clt = new Thread(new Runnable() {
             /* (non-Javadoc)
              * @see java.lang.Runnable#run()
@@ -78,11 +72,14 @@ public class ServletServer {
             
         });
         
-        try {
-            clt.start();
-            webServer.start();
-        } finally {
-            //webServer.shutdown();
-        }
+        return clt;
+    }
+    
+    public void start() {
+        worker.start();
+    }
+    
+    public int getPort() {
+        return port;
     }
 }
