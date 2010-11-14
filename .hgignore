@@ -1,3 +1,6 @@
 .svn
 .class
 bin
+
+syntax: regexp
+target
