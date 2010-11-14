@@ -16,43 +16,37 @@
 
 package jd.plugins.hoster;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
-import javax.imageio.ImageIO;
-
 import jd.PluginWrapper;
 import jd.config.ConfigContainer;
 import jd.config.ConfigEntry;
-import jd.controlling.CaptchaController;
-import jd.controlling.DownloadController;
 import jd.controlling.HTACCESSController;
 import jd.controlling.JDLogger;
 import jd.http.Browser;
 import jd.http.Cookies;
 import jd.http.URLConnectionAdapter;
-import jd.nutils.JDImage;
 import jd.nutils.encoding.Encoding;
 import jd.parser.Regex;
 import jd.parser.html.Form;
 import jd.plugins.DownloadLink;
-import jd.plugins.DownloadLink.AvailableStatus;
 import jd.plugins.HostPlugin;
 import jd.plugins.LinkStatus;
 import jd.plugins.Plugin;
 import jd.plugins.PluginException;
 import jd.plugins.PluginForHost;
+import jd.plugins.DownloadLink.AvailableStatus;
 import jd.utils.JDUtilities;
 import jd.utils.locale.JDL;
 
 /**
  * TODO: Remove after next big update of core to use the public static methods!
  */
-@HostPlugin(revision = "$Revision: 12884 $", interfaceVersion = 2, names = { "DirectHTTP", "http links" }, urls = { "directhttp://.+", "https?viajd://[\\d\\w\\.:\\-@]*/.*\\.(3gp|7zip|7z|abr|ac3|ai|aiff|aif|aifc|au|avi|bin|bz2|cbr|cbz|ccf|cue|dta|deb|divx|djvu|dlc|dmg|doc|docx|dot|eps|exe|ff|flv|f4v|gif|gz|iwd|iso|java|jar|jpg|jpeg|jdeatme|load|mws|mv|m4v|m4a|mkv|mp2|mp3|mp4|mov|movie|mpeg|mpe|mpg|msi|msu|nfo|oga|ogg|ogv|otrkey|pkg|png|pdf|ppt|pptx|pps|ppz|pot|psd|qt|rm|rmvb|rar|rnd|r\\d+|rpm|run|rsdf|rtf|sh|srt|snd|sfv|swf|tar|tif|tiff|ts|txt|viv|vivo|vob|wav|wmv|xla|xls|xpi|zip|z\\d+|_[_a-z]{2}|\\d+$)" }, flags = { 0, 0 })
+@HostPlugin(revision = "$Revision: 12955 $", interfaceVersion = 2, names = { "DirectHTTP", "http links" }, urls = { "directhttp://.+", "https?viajd://[\\d\\w\\.:\\-@]*/.*\\.(3gp|7zip|7z|abr|ac3|ai|aiff|aif|aifc|au|avi|bin|bz2|cbr|cbz|ccf|cue|dta|deb|divx|djvu|dlc|dmg|doc|docx|dot|eps|exe|ff|flv|f4v|gif|gz|iwd|iso|java|jar|jpg|jpeg|jdeatme|load|mws|mv|m4v|m4a|mkv|mp2|mp3|mp4|mov|movie|mpeg|mpe|mpg|msi|msu|nfo|oga|ogg|ogv|otrkey|pkg|png|pdf|ppt|pptx|pps|ppz|pot|psd|qt|rm|rmvb|rar|rnd|r\\d+|rpm|run|rsdf|rtf|sh|srt|snd|sfv|swf|tar|tif|tiff|ts|txt|viv|vivo|vob|wav|wmv|xla|xls|xpi|zip|z\\d+|_[_a-z]{2}|\\d+$)" }, flags = { 2, 0 })
 public class DirectHTTP extends PluginForHost {
 
     public static class Recaptcha {
@@ -83,32 +77,6 @@ public class DirectHTTP extends PluginForHost {
 
         public String getCaptchaAddress() {
             return this.captchaAddress;
-        }
-
-        protected String getCaptchaCode(final String method, final File file, final DownloadLink link, final Plugin plg) throws PluginException {
-            final LinkStatus linkStatus = link.getLinkStatus();
-            final String status = linkStatus.getStatusText();
-            final DownloadController downloadController = DownloadController.getInstance();
-            try {
-                linkStatus.addStatus(LinkStatus.WAITING_USERIO);
-                linkStatus.setStatusText(JDL.L("gui.downloadview.statustext.jac", "Captcha recognition"));
-                try {
-                    final BufferedImage img = ImageIO.read(file);
-                    linkStatus.setStatusIcon(JDImage.getScaledImageIcon(img, 16, 16));
-                } catch (final Exception e) {
-                    e.printStackTrace();
-                }
-                downloadController.fireDownloadLinkUpdate(link);
-
-                final String cc = new CaptchaController(plg.getHost(), plg instanceof PluginForHost ? ((PluginForHost) plg).getHosterIconUnscaled() : null, method, file, "", "Please enter both words").getCode(0);
-                if (cc == null) { throw new PluginException(LinkStatus.ERROR_CAPTCHA); }
-                return cc;
-            } finally {
-                linkStatus.removeStatus(LinkStatus.WAITING_USERIO);
-                linkStatus.setStatusText(status);
-                linkStatus.setStatusIcon(null);
-                downloadController.fireDownloadLinkUpdate(link);
-            }
         }
 
         public String getChallenge() {
@@ -148,7 +116,9 @@ public class DirectHTTP extends PluginForHost {
                 dest.deleteOnExit();
 
                 this.downloadCaptcha(dest);
-                final String code = this.getCaptchaCode(plg.getHost(), dest, downloadLink, plg);
+                // workaround
+                final String code = new DirectHTTP(PluginWrapper.getWrapper(plg.getClass().getName())).getCaptchaCode(plg.getHost(), dest, 0, downloadLink, "", "Please enter both words");
+
                 if (code == null || code.length() == 0) { throw new PluginException(LinkStatus.ERROR_TEMPORARILY_UNAVAILABLE, "Recaptcha failed"); }
                 this.setCode(code);
 
@@ -361,13 +331,34 @@ public class DirectHTTP extends PluginForHost {
         return tmplinks;
     }
 
-    private String contentType       = "";
+    private String         contentType       = "";
 
-    private String customFavIconHost = null;
+    private String         customFavIconHost = null;
+
+    private static boolean hotFixSynthethica = true;
 
     public DirectHTTP(final PluginWrapper wrapper) {
         super(wrapper);
         this.setConfigElements();
+        if (hotFixSynthethica) {
+            try {
+                /*
+                 * hotfix for synthetica license issues, as some java versions
+                 * have broken aes support
+                 */
+                /*
+                 * NOTE: This Licensee Information may only be used by AppWork
+                 * UG. If you like to create derived creation based on this
+                 * sourcecode, you have to remove this license key. Instead you
+                 * may use the FREE Version of synthetica found on javasoft.de
+                 */
+                String[] li = { "Licensee=AppWork UG", "LicenseRegistrationNumber=289416475", "Product=Synthetica", "LicenseType=Small Business License", "ExpireDate=--.--.----", "MaxVersion=2.999.999" };
+                javax.swing.UIManager.put("Synthetica.license.info", li);
+                javax.swing.UIManager.put("Synthetica.license.key", "C1410294-61B64AAC-4B7D3039-834A82A1-37E5D695");
+            } catch (Throwable e) {
+            }
+            hotFixSynthethica = false;
+        }
     }
 
     private void BasicAuthfromURL(final DownloadLink link) {

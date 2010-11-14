@@ -41,7 +41,7 @@ import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
 import org.mozilla.javascript.Scriptable;
 
-@HostPlugin(revision = "$Revision: 12831 $", interfaceVersion = 2, names = { "share-online.biz" }, urls = { "http://[\\w\\.]*?(share\\-online\\.biz|egoshare\\.com)/(download.php\\?id\\=|dl/)[\\w]+" }, flags = { 2 })
+@HostPlugin(revision = "$Revision: 12955 $", interfaceVersion = 2, names = { "share-online.biz" }, urls = { "http://[\\w\\.]*?(share\\-online\\.biz|egoshare\\.com)/(download.php\\?id\\=|dl/)[\\w]+" }, flags = { 2 })
 public class ShareOnlineBiz extends PluginForHost {
 
     private final static HashMap<Account, HashMap<String, String>> ACCOUNTINFOS = new HashMap<Account, HashMap<String, String>>();
@@ -287,17 +287,22 @@ public class ShareOnlineBiz extends PluginForHost {
             if (dlURL == null) throw new PluginException(LinkStatus.ERROR_PLUGIN_DEFECT);
             br.setFollowRedirects(true);
             /* Datei herunterladen */
+            /* api allows resume, only 1 chunk */
             dl = jd.plugins.BrowserAdapter.openDownload(br, parameter, dlURL, true, 1);
             if (!dl.getConnection().isContentDisposition()) {
                 br.followConnection();
                 throw new PluginException(LinkStatus.ERROR_PLUGIN_DEFECT);
             }
-            /*signal to use API for download*/
+            /* signal to use API for download */
             useAPI = true;
         } catch (PluginException e) {
-            if (e.getLinkStatus() == LinkStatus.ERROR_PREMIUM) throw e;
-            if (e.getLinkStatus() == LinkStatus.ERROR_FILE_NOT_FOUND) throw e;
-            if (e.getLinkStatus() == LinkStatus.ERROR_PLUGIN_DEFECT) {
+            /* workaround for stable */
+            DownloadLink tmpLink = new DownloadLink(null, "temp", "temp", "temp", false);
+            LinkStatus linkState = new LinkStatus(tmpLink);
+            e.fillLinkStatus(linkState);
+            if (linkState.hasStatus(LinkStatus.ERROR_PREMIUM)) throw e;
+            if (linkState.hasStatus(LinkStatus.ERROR_FILE_NOT_FOUND)) throw e;
+            if (linkState.hasStatus(LinkStatus.ERROR_PLUGIN_DEFECT)) {
                 logger.severe(br.toString());
             } else {
                 logger.severe(e.getErrorMessage());
@@ -310,7 +315,7 @@ public class ShareOnlineBiz extends PluginForHost {
             if (dlCookie != null) br.getCookies("http://www.share-online.biz").remove(dlCookie);
         }
         if (useAPI) {
-            /*let us use API to download the file*/
+            /* let us use API to download the file */
             dl.startDownload();
             return;
         }
@@ -364,6 +369,7 @@ public class ShareOnlineBiz extends PluginForHost {
         if (url == null) throw new PluginException(LinkStatus.ERROR_PLUGIN_DEFECT);
         br.setFollowRedirects(true);
         /* Datei herunterladen */
+        /* website does not allow resume, only 1 chunk to allow api resume */
         dl = jd.plugins.BrowserAdapter.openDownload(br, parameter, url, false, 1);
         if (!dl.getConnection().isContentDisposition()) {
             br.followConnection();

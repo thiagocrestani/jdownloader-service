@@ -34,7 +34,7 @@ import jd.plugins.PluginForHost;
 import jd.plugins.DownloadLink.AvailableStatus;
 import jd.utils.locale.JDL;
 
-@HostPlugin(revision = "$Revision: 12880 $", interfaceVersion = 2, names = { "fsx.hu" }, urls = { "http://s.*?.fsx.hu/.+/.+" }, flags = { 2 })
+@HostPlugin(revision = "$Revision: 12912 $", interfaceVersion = 2, names = { "fsx.hu" }, urls = { "http://s.*?.fsx.hu/.+/.+" }, flags = { 2 })
 public class FsxHu extends PluginForHost {
 
     public FsxHu(PluginWrapper wrapper) {
@@ -66,15 +66,24 @@ public class FsxHu extends PluginForHost {
 
     private void downloadImage(String url) throws Exception {
         jd.http.Browser br1 = br.cloneBrowser();
-        URLConnectionAdapter con = br1.openGetConnection(url);
-        BufferedInputStream input = new BufferedInputStream(con.getInputStream());
-
-        byte[] b = new byte[1024];
-        while (input.read(b) != -1) {
+        URLConnectionAdapter con = null;
+        BufferedInputStream input = null;
+        try {
+            con = br1.openGetConnection(url);
+            input = new BufferedInputStream(con.getInputStream());
+            byte[] b = new byte[1024];
+            while (input.read(b) != -1) {
+            }
+        } finally {
+            try {
+                input.close();
+            } catch (Throwable e) {
+            }
+            try {
+                con.disconnect();
+            } catch (Throwable e1) {
+            }
         }
-        input.close();
-
-        con.disconnect();
     }
 
     @Override

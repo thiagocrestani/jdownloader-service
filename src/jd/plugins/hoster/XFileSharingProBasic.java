@@ -39,7 +39,7 @@ import jd.plugins.PluginForHost;
 import jd.plugins.DownloadLink.AvailableStatus;
 import jd.utils.JDUtilities;
 
-@HostPlugin(revision = "$Revision: 12824 $", interfaceVersion = 2, names = { "ForDevsToPlayWith.com" }, urls = { "http://(www\\.)?ForDevsToPlayWith\\.com/[a-z0-9]{12}" }, flags = { 0 })
+@HostPlugin(revision = "$Revision: 12968 $", interfaceVersion = 2, names = { "ForDevsToPlayWith.com" }, urls = { "http://(www\\.)?ForDevsToPlayWith\\.com/[a-z0-9]{12}" }, flags = { 0 })
 public class XFileSharingProBasic extends PluginForHost {
 
     public XFileSharingProBasic(PluginWrapper wrapper) {
@@ -47,7 +47,7 @@ public class XFileSharingProBasic extends PluginForHost {
         // this.enablePremium(COOKIE_HOST + "/premium.html");
     }
 
-    // XfileSharingProBasic Version 2.0.0.0
+    // XfileSharingProBasic Version 2.0.1.0
     // This is only for developers to easily implement hosters using the
     // "xfileshare(pro)" script (more informations can be found on
     // xfilesharing.net)!
@@ -224,35 +224,23 @@ public class XFileSharingProBasic extends PluginForHost {
             if (password) {
                 passCode = handlePassword(passCode, DLForm, downloadLink);
             }
-            dl = jd.plugins.BrowserAdapter.openDownload(br, downloadLink, DLForm, resumable, maxchunks);
+            br.submitForm(DLForm);
             logger.info("Submitted DLForm");
         }
-        boolean error = false;
+        doSomething();
+        checkErrors(downloadLink, true, passCode, loggedIn);
+        dllink = getDllink();
         if (dllink == null) {
-            try {
-                if (dl.getConnection().getContentType().contains("html")) error = true;
-            } catch (Exception e) {
-                error = true;
-            }
+            logger.warning("Final downloadlink (String is \"dllink\") regex didn't match!");
+            throw new PluginException(LinkStatus.ERROR_PLUGIN_DEFECT);
         }
-        if (error) {
+        logger.info("Final downloadlink = " + dllink + " starting the download...");
+        dl = jd.plugins.BrowserAdapter.openDownload(br, downloadLink, dllink, resumable, maxchunks);
+        if (dl.getConnection().getContentType().contains("html")) {
+            logger.warning("The final dllink seems not to be a file!");
             br.followConnection();
-            logger.info("followed connection...");
-            doSomething();
-            checkErrors(downloadLink, true, passCode, loggedIn);
-            dllink = getDllink();
-            if (dllink == null) {
-                logger.warning("Final downloadlink (String is \"dllink\") regex didn't match!");
-                throw new PluginException(LinkStatus.ERROR_PLUGIN_DEFECT);
-            }
-            logger.info("Final downloadlink = " + dllink + " starting the download...");
-            dl = jd.plugins.BrowserAdapter.openDownload(br, downloadLink, dllink, resumable, maxchunks);
-            if (dl.getConnection().getContentType().contains("html")) {
-                logger.warning("The final dllink seems not to be a file!");
-                br.followConnection();
-                checkServerErrors();
-                throw new PluginException(LinkStatus.ERROR_PLUGIN_DEFECT);
-            }
+            checkServerErrors();
+            throw new PluginException(LinkStatus.ERROR_PLUGIN_DEFECT);
         }
         if (passCode != null) {
             downloadLink.setProperty("pass", passCode);
@@ -310,7 +298,7 @@ public class XFileSharingProBasic extends PluginForHost {
         }
         account.setValid(true);
         String availabletraffic = new Regex(BRBEFORE, "Traffic available.*?:</TD><TD><b>(.*?)</b>").getMatch(0);
-        if (availabletraffic != null && !availabletraffic.contains("unlimited") && !availabletraffic.equals(" Mb")) {
+        if (availabletraffic != null && !availabletraffic.contains("nlimited") && !availabletraffic.equals(" Mb")) {
             ai.setTrafficLeft(Regex.getSize(availabletraffic));
         } else {
             ai.setUnlimitedTraffic();
@@ -513,7 +501,10 @@ public class XFileSharingProBasic extends PluginForHost {
         String finallink = null;
         if (decoded != null) {
             finallink = new Regex(decoded, "name=\"src\"value=\"(.*?)\"").getMatch(0);
-            if (finallink == null) finallink = new Regex(decoded, "type=\"video/divx\"src=\"(.*?)\"").getMatch(0);
+            if (finallink == null) {
+                finallink = new Regex(decoded, "type=\"video/divx\"src=\"(.*?)\"").getMatch(0);
+                if (finallink == null) finallink = new Regex(decoded, "s1\\.addVariable\\(\\'file\\',\\'(http://.*?)\\'\\)").getMatch(0);
+            }
         }
         return finallink;
     }

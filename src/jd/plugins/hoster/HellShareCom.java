@@ -32,7 +32,7 @@ import jd.plugins.PluginForHost;
 import jd.plugins.DownloadLink.AvailableStatus;
 import jd.utils.locale.JDL;
 
-@HostPlugin(revision = "$Revision: 12806 $", interfaceVersion = 2, names = { "hellshare.com" }, urls = { "http://[\\w\\.]*?(download\\.((sk|cz|en)\\.hellshare\\.com|hellshare\\.(sk|hu|de))/.+/[0-9]+|hellshare\\.com/[0-9]+/.+/.+)" }, flags = { 2 })
+@HostPlugin(revision = "$Revision: 12936 $", interfaceVersion = 2, names = { "hellshare.com" }, urls = { "http://[\\w\\.]*?(download\\.((sk|cz|en)\\.hellshare\\.com|hellshare\\.(sk|hu|de))/.+/[0-9]+|hellshare\\.com/[0-9]+/.+/.+)" }, flags = { 2 })
 public class HellShareCom extends PluginForHost {
 
     public HellShareCom(PluginWrapper wrapper) {
@@ -58,14 +58,9 @@ public class HellShareCom extends PluginForHost {
         /* to prefer english page */
         br.getHeaders().put("Accept-Language", "en-gb;q=0.9, en;q=0.8");
         br.setFollowRedirects(false);
-        br.getPage("http://www.en.hellshare.com/log-in");
-        Form form = br.getForm(0);
-        if (form == null) throw new PluginException(LinkStatus.ERROR_PLUGIN_DEFECT);
-        form.put("lgnp7_lg", Encoding.urlEncode(account.getUser()));
-        form.put("lgnp7_psw", Encoding.urlEncode(account.getPass()));
         br.setDebug(true);
         br.setFollowRedirects(true);
-        br.submitForm(form);
+        br.postPage("http://www.hellshare.com/login?do=loginForm-submit", "username=" + Encoding.urlEncode(account.getUser()) + "&password=" + Encoding.urlEncode(account.getPass()) + "&login=odeslat&DownloadRedirect=");
         /*
          * this will change account language to eng,needed because language is
          * saved in profile
