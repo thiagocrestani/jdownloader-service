@@ -79,8 +79,8 @@ public class Extraction extends PluginOptional implements ControlListener, Extra
 
         this.queue = new Jobber(1);
 
-        initConfig();
         initExtractors();
+        initConfig();
     }
 
     private void initExtractors() {
@@ -118,7 +118,7 @@ public class Extraction extends PluginOptional implements ControlListener, Extra
                 return;
             }
             
-            if (this.getPluginConfig().getBooleanProperty("ACTIVATED", true) || link.getFilePackage().isPostProcessing()) {
+            if (this.getPluginConfig().getBooleanProperty("ACTIVATED", true)) {
                 Archive archive = buildArchive(link);
                 
                 if(archive.isComplete()) {
@@ -147,13 +147,13 @@ public class Extraction extends PluginOptional implements ControlListener, Extra
             ArrayList<MenuAction> items = (ArrayList<MenuAction>) event.getParameter();
             MenuAction m;
             MenuAction container = new MenuAction("optional.extraction.linkmenu.container", 0);
-            container.setIcon("gui.images.addons.unrar");
+            container.setIcon(getIconKey());
             items.add(container);
             if (event.getCaller() instanceof DownloadLink) {
                 link = (DownloadLink) event.getCaller();
 
-                container.addMenuItem(m = new MenuAction("optional.extraction.linkmenu.extract", 1000));
-                m.setIcon("gui.images.addons.unrar");
+                container.addMenuItem(m = new MenuAction("optional.extraction.linkmenu.extract", EXTRACT_LINK));
+                m.setIcon(getIconKey());
                 m.setActionListener(this);
                 
                 boolean isLocalyAvailable = new File(link.getFileOutput()).exists() || new File(link.getStringProperty(DownloadLink.STATIC_OUTPUTFILE, link.getFileOutput())).exists();
@@ -165,12 +165,15 @@ public class Extraction extends PluginOptional implements ControlListener, Extra
                 }
                 
                 m.setProperty("LINK", link);
-                container.addMenuItem(m = new MenuAction("optional.extraction.linkmenu.autoextract", 1005));
+                container.addMenuItem(m = new MenuAction("optional.extraction.linkmenu.autoextract", SET_LINK_AUTOEXTRACT));
                 m.setActionListener(this);
                 m.setSelected(link.getFilePackage().isPostProcessing());
+                if(!this.getPluginConfig().getBooleanProperty("ACTIVATED", true)) {
+                    m.setEnabled(false);
+                }
                 m.setProperty("LINK", link);
                 container.addMenuItem(new MenuAction(Types.SEPARATOR));
-                container.addMenuItem(m = new MenuAction("optional.extraction.linkmenu.setextract", 1003));
+                container.addMenuItem(m = new MenuAction("optional.extraction.linkmenu.setextract", SET_EXTRACT_TO));
                 m.setActionListener(this);
                 m.setProperty("LINK", link);
                 File dir = this.getExtractToPath(link);
@@ -179,20 +182,23 @@ public class Extraction extends PluginOptional implements ControlListener, Extra
                     dir = dir.getParentFile();
                 }
                 if (dir == null) break;
-                container.addMenuItem(m = new MenuAction("optional.extraction.linkmenu.openextract3", 1002));
+                container.addMenuItem(m = new MenuAction("optional.extraction.linkmenu.openextract3", OPEN_EXTRACT));
                 m.setActionListener(this);
                 link.setProperty(ExtractionConstants.DOWNLOADLINK_KEY_EXTRACTEDPATH + "2", dir.getAbsolutePath());
                 m.setProperty("LINK", link);
             } else {
                 FilePackage fp = (FilePackage) event.getCaller();
 
-                container.addMenuItem(m = new MenuAction("optional.extraction.linkmenu.package.extract", 1001));
-                m.setIcon("gui.images.addons.unrar");
+                container.addMenuItem(m = new MenuAction("optional.extraction.linkmenu.package.extract", EXTRACT_PACKAGE));
+                m.setIcon(getIconKey());
                 m.setActionListener(this);
                 m.setProperty("PACKAGE", fp);
-                container.addMenuItem(m = new MenuAction("optional.extraction.linkmenu.package.autoextract", 1006));
+                container.addMenuItem(m = new MenuAction("optional.extraction.linkmenu.package.autoextract", SET_PACKAGE_AUTOEXTRACT));
                 m.setSelected(fp.isPostProcessing());
                 m.setActionListener(this);
+                if(!this.getPluginConfig().getBooleanProperty("ACTIVATED", true)) {
+                    m.setEnabled(false);
+                }
                 m.setProperty("PACKAGE", fp);
             }
             break;
@@ -216,7 +222,7 @@ public class Extraction extends PluginOptional implements ControlListener, Extra
         ExtractionController controller = new ExtractionController(archive, extractor);
 
         if (archive.getFirstDownloadLink().getHost().equals(DUMMY_HOSTER)) {
-            ProgressController progress = new ProgressController(JDL.LF("plugins.optional.extraction.progress.extractfile", "Extract %s", archive.getFirstDownloadLink().getFileOutput()), 100, "gui.images.addons.unrar");
+            ProgressController progress = new ProgressController(JDL.LF("plugins.optional.extraction.progress.extractfile", "Extract %s", archive.getFirstDownloadLink().getFileOutput()), 100, getIconKey());
             controller.setProgressController(progress);
         }
 
@@ -235,6 +241,8 @@ public class Extraction extends PluginOptional implements ControlListener, Extra
         controller.setPasswordList(pwList);
         
         archive.setActive(true);
+        
+        extractor.setConfig(getPluginConfig());
 
         controller.fireEvent(ExtractionConstants.WRAPPER_STARTED);
         queue.add(controller);
@@ -427,7 +435,7 @@ public class Extraction extends PluginOptional implements ControlListener, Extra
                 extractto = extractto.getParentFile();
             }
 
-            File[] files = UserIO.getInstance().requestFileChooser("_JDUNRAR_", null, UserIO.DIRECTORIES_ONLY, ff, null, extractto, null);
+            File[] files = UserIO.getInstance().requestFileChooser("_EXTRACTION_", null, UserIO.DIRECTORIES_ONLY, ff, null, extractto, null);
             if (files == null) return;
 
             for (DownloadLink l : archive0.getDownloadLinks()) {
@@ -449,7 +457,7 @@ public class Extraction extends PluginOptional implements ControlListener, Extra
 
     @Override
     public boolean initAddon() {
-        if (menuAction == null) menuAction = new MenuAction("optional.extraction.menu.extract.singlefiles", "gui.images.addons.unrar") {
+        if (menuAction == null) menuAction = new MenuAction("optional.extraction.menu.extract.singlefiles", getIconKey()) {
             private static final long serialVersionUID = -7569522709162921624L;
 
             @Override
@@ -502,22 +510,24 @@ public class Extraction extends PluginOptional implements ControlListener, Extra
 
         config.setGroup(new ConfigGroup(getHost(), getIconKey()));
         
-        config.addEntry(conditionEntry = new ConfigEntry(ConfigContainer.TYPE_CHECKBOX, subConfig, ExtractionConstants.CONFIG_KEY_USE_EXTRACT_PATH, JDL.L("gui.config.unrar.use_extractto", "Use customized extract path")).setDefaultValue(false));
-        config.addEntry(ce = new ConfigEntry(ConfigContainer.TYPE_BROWSEFOLDER, subConfig, ExtractionConstants.CONFIG_KEY_UNRARPATH, JDL.L("gui.config.unrar.path", "Extract to")));
+        config.addEntry(conditionEntry = new ConfigEntry(ConfigContainer.TYPE_CHECKBOX, subConfig, ExtractionConstants.CONFIG_KEY_USE_EXTRACT_PATH, JDL.L("gui.config.extraction.use_extractto", "Use customized extract path")).setDefaultValue(false));
+        config.addEntry(ce = new ConfigEntry(ConfigContainer.TYPE_BROWSEFOLDER, subConfig, ExtractionConstants.CONFIG_KEY_UNRARPATH, JDL.L("gui.config.extraction.path", "Extract to")));
         ce.setDefaultValue(JDUtilities.getDefaultDownloadDirectory());
         ce.setEnabledCondidtion(conditionEntry, true);
-        config.addEntry(new ConfigEntry(ConfigContainer.TYPE_CHECKBOX, subConfig, ExtractionConstants.CONFIG_KEY_REMVE_AFTER_EXTRACT, JDL.L("gui.config.unrar.remove_after_extract", "Delete archives after suc. extraction?")).setDefaultValue(false));
-        config.addEntry(new ConfigEntry(ConfigContainer.TYPE_CHECKBOX, subConfig, ExtractionConstants.CONFIG_KEY_OVERWRITE, JDL.L("gui.config.unrar.overwrite", "Overwrite existing files?")).setDefaultValue(false));
+        config.addEntry(new ConfigEntry(ConfigContainer.TYPE_CHECKBOX, subConfig, ExtractionConstants.CONFIG_KEY_REMVE_AFTER_EXTRACT, JDL.L("gui.config.extraction.remove_after_extract", "Delete archives after suc. extraction?")).setDefaultValue(false));
+        config.addEntry(new ConfigEntry(ConfigContainer.TYPE_CHECKBOX, subConfig, ExtractionConstants.CONFIG_KEY_OVERWRITE, JDL.L("gui.config.extraction.overwrite", "Overwrite existing files?")).setDefaultValue(false));
 
-        config.setGroup(new ConfigGroup(JDL.L("plugins.optional.jdunrar.config.advanced", "Premium settings"), getIconKey()));
-        config.addEntry(conditionEntry = new ConfigEntry(ConfigContainer.TYPE_CHECKBOX, subConfig, ExtractionConstants.CONFIG_KEY_USE_SUBPATH, JDL.L("gui.config.unrar.use_subpath", "Use subpath")).setDefaultValue(false));
-        config.addEntry(ce = new ConfigEntry(ConfigContainer.TYPE_TEXTFIELD, subConfig, ExtractionConstants.CONFIG_KEY_SUBPATH, JDL.L("gui.config.unrar.subpath", "Subpath")));
+        config.setGroup(new ConfigGroup(JDL.L("plugins.optional.extraction.config.advanced", "Premium settings"), getIconKey()));
+        config.addEntry(conditionEntry = new ConfigEntry(ConfigContainer.TYPE_CHECKBOX, subConfig, ExtractionConstants.CONFIG_KEY_USE_SUBPATH, JDL.L("gui.config.extraction.use_subpath", "Use subpath")).setDefaultValue(false));
+        config.addEntry(ce = new ConfigEntry(ConfigContainer.TYPE_TEXTFIELD, subConfig, ExtractionConstants.CONFIG_KEY_SUBPATH, JDL.L("gui.config.extraction.subpath", "Subpath")));
         ce.setDefaultValue("%PACKAGENAME%");
         ce.setEnabledCondidtion(conditionEntry, true);
-        config.addEntry(new ConfigEntry(ConfigContainer.TYPE_SPINNER, subConfig, ExtractionConstants.CONFIG_KEY_SUBPATH_MINNUM, JDL.L("gui.config.unrar.subpath_minnum", "Only use subpath if archive contains more than x files"), 0, 600, 5).setDefaultValue(0));
-        config.addEntry(new ConfigEntry(ConfigContainer.TYPE_CHECKBOX, subConfig, ExtractionConstants.CONFIG_KEY_ASK_UNKNOWN_PASS, JDL.L("gui.config.unrar.ask_path", "Ask for unknown passwords?")).setDefaultValue(true));
-        config.addEntry(new ConfigEntry(ConfigContainer.TYPE_CHECKBOX, subConfig, ExtractionConstants.CONFIG_KEY_DEEP_EXTRACT, JDL.L("gui.config.unrar.deep_extract", "Deep-Extraction")).setDefaultValue(true));
-        config.addEntry(new ConfigEntry(ConfigContainer.TYPE_CHECKBOX, subConfig, ExtractionConstants.CONFIG_KEY_REMOVE_INFO_FILE, JDL.L("gui.config.unrar.remove_infofile", "Delete Infofile after extraction")).setDefaultValue(false));
+        config.addEntry(new ConfigEntry(ConfigContainer.TYPE_SPINNER, subConfig, ExtractionConstants.CONFIG_KEY_SUBPATH_MINNUM, JDL.L("gui.config.extraction.subpath_minnum", "Only use subpath if archive contains more than x files"), 0, 600, 5).setDefaultValue(0));
+        config.addEntry(new ConfigEntry(ConfigContainer.TYPE_CHECKBOX, subConfig, ExtractionConstants.CONFIG_KEY_ASK_UNKNOWN_PASS, JDL.L("gui.config.extraction.ask_path", "Ask for unknown passwords?")).setDefaultValue(true));
+        config.addEntry(new ConfigEntry(ConfigContainer.TYPE_CHECKBOX, subConfig, ExtractionConstants.CONFIG_KEY_DEEP_EXTRACT, JDL.L("gui.config.extraction.deep_extract", "Deep-Extraction")).setDefaultValue(true));
+        config.addEntry(new ConfigEntry(ConfigContainer.TYPE_CHECKBOX, subConfig, ExtractionConstants.CONFIG_KEY_REMOVE_INFO_FILE, JDL.L("gui.config.extraction.remove_infofile", "Delete Infofile after extraction")).setDefaultValue(false));
+        
+        config.addEntry(new ConfigEntry(ConfigContainer.TYPE_SPINNER, subConfig, ExtractionConstants.CONFIG_KEY_ADDITIONAL_SPACE, JDL.L("gui.config.extraction.additional_space", "Leave x MiB additional space after unpacking"), 1, 2048, 1).setDefaultValue(512));
 
         for (IExtraction extractor : extractors) {
             extractor.initConfig(config, subConfig);
@@ -534,7 +544,7 @@ public class Extraction extends PluginOptional implements ControlListener, Extra
         // Falls der link entfernt wird während dem entpacken
         if (controller.getArchiv().getFirstDownloadLink().getFilePackage() == FilePackage.getDefaultFilePackage() && controller.getProgressController() == null) {
             logger.warning("LINK GOT REMOVED_: " + controller.getArchiv().getFirstDownloadLink());
-            ProgressController progress = new ProgressController(JDL.LF("plugins.optional.extraction.progress.extractfile", "Extract %s", controller.getArchiv().getFirstDownloadLink().getFileOutput()), 100, "gui.images.addons.unrar");
+            ProgressController progress = new ProgressController(JDL.LF("plugins.optional.extraction.progress.extractfile", "Extract %s", controller.getArchiv().getFirstDownloadLink().getFileOutput()), 100, getIconKey());
             controller.setProgressController(progress);
         }
 
@@ -549,10 +559,11 @@ public class Extraction extends PluginOptional implements ControlListener, Extra
             controller.getArchiv().getFirstDownloadLink().requestGuiUpdate();
             break;
         case ExtractionConstants.INVALID_BINARY:
-            logger.severe("Invalid unrar binary!");
+            logger.severe("Invalid extraction binary!");
             this.getPluginConfig().setProperty(ExtractionConstants.CONFIG_KEY_UNRARCOMMAND, null);
             this.getPluginConfig().setProperty(ExtractionConstants.UNRAR_HASH, null);
             this.getPluginConfig().save();
+            controller.getArchiv().setActive(false);
             break;
         case ExtractionConstants.WRAPPER_EXTRACTION_FAILED:
             for (DownloadLink link : controller.getArchiv().getDownloadLinks()) {
@@ -569,8 +580,9 @@ public class Extraction extends PluginOptional implements ControlListener, Extra
                     link.requestGuiUpdate();
                 }
             }
+            
+            controller.getArchiv().setActive(false);
             this.onFinished(controller);
-
             break;
         case ExtractionConstants.WRAPPER_PASSWORD_NEEDED_TO_CONTINUE:
             controller.getArchiv().getFirstDownloadLink().requestGuiUpdate();
@@ -640,8 +652,9 @@ public class Extraction extends PluginOptional implements ControlListener, Extra
                     link.requestGuiUpdate();
                 }
             }
+            
+            controller.getArchiv().setActive(false);
             this.onFinished(controller);
-
             break;
         case ExtractionConstants.WRAPPER_FINISHED_SUCCESSFULL:
             File[] files = new File[controller.getPostProcessingFiles().size()];
@@ -668,7 +681,7 @@ public class Extraction extends PluginOptional implements ControlListener, Extra
 //                    logger.info(infoFiles.getName() + " removed");
 //                }
 //            }
-            
+            controller.getArchiv().setActive(false);
             this.onFinished(controller);
             break;
         case ExtractionConstants.NOT_ENOUGH_SPACE:
@@ -729,10 +742,11 @@ public class Extraction extends PluginOptional implements ControlListener, Extra
             pc.setStatusText(controller.getArchiv().getFirstDownloadLink().getFileOutput() + ": " + JDL.L("plugins.optional.extraction.status.queued", "Queued for extracting"));
             break;
         case ExtractionConstants.INVALID_BINARY:
-            logger.severe("Invalid unrar binary!");
+            logger.severe("Invalid extraction binary!");
             this.getPluginConfig().setProperty(ExtractionConstants.CONFIG_KEY_UNRARCOMMAND, null);
             this.getPluginConfig().setProperty(ExtractionConstants.UNRAR_HASH, null);
             this.getPluginConfig().save();
+            controller.getArchiv().setActive(false);
             break;
         case ExtractionConstants.WRAPPER_EXTRACTION_FAILED:
             if (controller.getException() != null) {
@@ -741,6 +755,7 @@ public class Extraction extends PluginOptional implements ControlListener, Extra
                 pc.setStatusText(controller.getArchiv().getFirstDownloadLink().getFileOutput() + ": " + JDL.L("plugins.optional.extraction.status.extractfailed", "Extract failed"));
             }
 
+            controller.getArchiv().setActive(false);
             this.onFinished(controller);
 
             break;
@@ -778,6 +793,7 @@ public class Extraction extends PluginOptional implements ControlListener, Extra
             break;
         case ExtractionConstants.WRAPPER_EXTRACTION_FAILED_CRC:
             pc.setStatusText(controller.getArchiv().getFirstDownloadLink().getFileOutput() + ": " + JDL.L("plugins.optional.extraction.status.extractfailedcrc", "Extract failed (CRC error)"));
+            controller.getArchiv().setActive(false);
             this.onFinished(controller);
             break;
         case ExtractionConstants.WRAPPER_FINISHED_SUCCESSFULL:
@@ -797,6 +813,7 @@ public class Extraction extends PluginOptional implements ControlListener, Extra
                     logger.info(infoFiles.getName() + " removed");
                 }
             }
+            controller.getArchiv().setActive(false);
             this.onFinished(controller);
             break;
         }

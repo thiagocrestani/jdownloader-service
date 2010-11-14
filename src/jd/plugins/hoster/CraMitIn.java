@@ -40,7 +40,7 @@ import jd.plugins.PluginException;
 import jd.plugins.PluginForHost;
 import jd.utils.JDUtilities;
 
-@HostPlugin(revision = "$Revision: 12793 $", interfaceVersion = 2, names = { "cramit.in" }, urls = { "http://[\\w\\.]*?(cramit\\.in|cramitin\\.(net|eu))/[a-z0-9]{12}" }, flags = { 2 })
+@HostPlugin(revision = "$Revision: 12935 $", interfaceVersion = 2, names = { "cramit.in" }, urls = { "http://[\\w\\.]*?(cramit\\.in|cramitin\\.(net|eu))/[a-z0-9]{12}" }, flags = { 2 })
 public class CraMitIn extends PluginForHost {
 
     public CraMitIn(PluginWrapper wrapper) {
@@ -98,6 +98,9 @@ public class CraMitIn extends PluginForHost {
             filesize = br.getRegex("</font>(</a>)?[ ]+\\((.*?)\\)(.*?)</font>").getMatch(1);
             if (filesize == null) {
                 filesize = br.getRegex(">http://cramit\\.in/[a-z0-9]{12}</font> \\((.*?)\\)</font>").getMatch(0);
+                if (filesize == null) {
+                    filesize = br.getRegex("class=\"green\">http://cramit\\.in/[a-z0-9]{12}</span></a>( )?\\((.*?)\\)</div>").getMatch(1);
+                }
             }
         }
         if (brbefore.contains("<b>File Not Found</b><br><br>") && (filename == null || filename.matches(""))) {

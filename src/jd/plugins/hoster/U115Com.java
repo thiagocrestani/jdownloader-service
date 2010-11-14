@@ -29,12 +29,14 @@ import jd.plugins.PluginForHost;
 import jd.plugins.DownloadLink.AvailableStatus;
 import jd.utils.locale.JDL;
 
-@HostPlugin(revision = "$Revision: 12657 $", interfaceVersion = 2, names = { "u.115.com" }, urls = { "http://[\\w\\.]*?u\\.115\\.com/file/[a-z0-9]+" }, flags = { 0 })
+@HostPlugin(revision = "$Revision: 12922 $", interfaceVersion = 2, names = { "u.115.com" }, urls = { "http://[\\w\\.]*?u\\.115\\.com/file/[a-z0-9]+" }, flags = { 0 })
 public class U115Com extends PluginForHost {
 
     public U115Com(PluginWrapper wrapper) {
         super(wrapper);
-        this.setStartIntervall(5000l);
+        // 10 seconds waittime between the downloadstart of simultan DLs of this
+        // host
+        this.setStartIntervall(10000l);
     }
 
     @Override
@@ -117,7 +119,7 @@ public class U115Com extends PluginForHost {
 
     @Override
     public int getMaxSimultanFreeDownloadNum() {
-        return 1;
+        return -1;
     }
 
 }
