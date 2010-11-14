@@ -28,7 +28,7 @@ import jd.plugins.PluginForHost;
 import jd.plugins.DownloadLink.AvailableStatus;
 import jd.utils.locale.JDL;
 
-@HostPlugin(revision = "$Revision: 12838 $", interfaceVersion = 2, names = { "files.mail.ru" }, urls = { "http://[\\w\\.]*?wge4zu4rjfsdehehztiuxw/[A-Z0-9]{6}(/[a-z0-9]+)?" }, flags = { 0 })
+@HostPlugin(revision = "$Revision: 12904 $", interfaceVersion = 2, names = { "files.mail.ru" }, urls = { "http://[\\w\\.]*?wge4zu4rjfsdehehztiuxw/[A-Z0-9]{6}(/[a-z0-9]+)?" }, flags = { 0 })
 public class FilesMailRu extends PluginForHost {
 
     public FilesMailRu(PluginWrapper wrapper) {
@@ -156,6 +156,10 @@ public class FilesMailRu extends PluginForHost {
             logger.warning("The finallink doesn't seem to be a file, following connection...");
             logger.warning("finallink = " + downloadLink.getDownloadURL());
             br.followConnection();
+            if (br.getURL().equals(downloadLink.getStringProperty("folderID"))) {
+                logger.warning("Retrying...");
+                throw new PluginException(LinkStatus.ERROR_RETRY);
+            }
             throw new PluginException(LinkStatus.ERROR_PLUGIN_DEFECT);
         }
         dl.startDownload();
@@ -167,7 +171,7 @@ public class FilesMailRu extends PluginForHost {
         int tt = 10;
         if (ttt != null) tt = Integer.parseInt(ttt);
         logger.info("Waiting " + tt + " seconds...");
-        sleep(tt * 1001, downloadLink);
+        sleep((tt + 1) * 1001, downloadLink);
     }
 
     private String fixLink(String dllink) {

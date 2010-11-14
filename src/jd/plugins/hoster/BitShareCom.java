@@ -32,11 +32,11 @@ import jd.plugins.PluginForHost;
 import jd.plugins.DownloadLink.AvailableStatus;
 import jd.utils.JDUtilities;
 
-@HostPlugin(revision = "$Revision: 12872 $", interfaceVersion = 2, names = { "bitshare.com" }, urls = { "http://[\\w\\.]*?bitshare\\.com/files/[a-z0-9]{8}/(.*?\\.html)?" }, flags = { 0 })
+@HostPlugin(revision = "$Revision: 12935 $", interfaceVersion = 2, names = { "bitshare.com" }, urls = { "http://[\\w\\.]*?bitshare\\.com/files/[a-z0-9]{8}/(.*?\\.html)?" }, flags = { 0 })
 public class BitShareCom extends PluginForHost {
 
-    private static final String RECAPTCHA = "/recaptcha/";
-    private static final String JSONHOST  = "http://bitshare.com/files-ajax/";
+    // private static final String RECAPTCHA = "/recaptcha/";
+    private static final String JSONHOST = "http://bitshare.com/files-ajax/";
 
     public BitShareCom(PluginWrapper wrapper) {
         super(wrapper);
@@ -65,7 +65,7 @@ public class BitShareCom extends PluginForHost {
     @Override
     public void handleFree(DownloadLink downloadLink) throws Exception, PluginException {
         requestFileInformation(downloadLink);
-        if (br.containsHTML("You reached your hourly traffic limit")) {
+        if (br.containsHTML("(You reached your hourly traffic limit|Your Traffic is used up for today)")) {
             String wait = br.getRegex("id=\"blocktimecounter\">(\\d+) Seconds</span>").getMatch(0);
             if (wait == null) wait = br.getRegex("var blocktime = (\\d+);").getMatch(0);
             if (wait != null)
@@ -73,7 +73,6 @@ public class BitShareCom extends PluginForHost {
             else
                 throw new PluginException(LinkStatus.ERROR_IP_BLOCKED);
         }
-        if (!br.containsHTML(RECAPTCHA)) throw new PluginException(LinkStatus.ERROR_PLUGIN_DEFECT);
         String fileID = new Regex(downloadLink.getDownloadURL(), "bitshare\\.com/files/([a-z0-9]{8})/").getMatch(0);
         String tempID = br.getRegex("var ajaxdl = \"(.*?)\";").getMatch(0);
         if (fileID == null || tempID == null) throw new PluginException(LinkStatus.ERROR_PLUGIN_DEFECT);
