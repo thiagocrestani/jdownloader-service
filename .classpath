@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="jd/plugins/optional/neembuu/" kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="jd/ressourcen/libs/dbus"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="ressourcen/libs/BrowserLauncher2.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/hsqldb.jar" sourcepath="ressourcen/code-ressourcen/hsqsql_src.zip"/>
+	<classpathentry kind="lib" path="ressourcen/libs/htmlcleaner2_0.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/irclib.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/js.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/savemytube.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/cobra.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/miglayout.jar" sourcepath="ressourcen/code-ressourcen/miglayout-3.7.3.1-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/JDownloader/ressourcen/code-ressourcen/miglayout-3.7.3.1-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="ressourcen/libs/swingworker.jar" sourcepath="ressourcen/code-ressourcen/swing-worker-src-1.2.zip">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/jd/ressourcen/code-ressourcen/swing-worker-doc-1.2.zip!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="ressourcen/libs/clink170.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs_ext/mail.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs_ext/ui.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs_ext/debug-1.0.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs_ext/jcip-annotations-1.0.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/Filters.jar" sourcepath="ressourcen/code-ressourcen/Filter_src.zip"/>
+	<classpathentry kind="lib" path="ressourcen/libs_ext/JTattoo.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs_ext/looks.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/laf/synthetica.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/jd/ressourcen/code-ressourcen/synthetica_docs.zip!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="ressourcen/libs/laf/syntheticaBatik.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/laf/syntheticaBlackMoon.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/laf/syntheticaBlackStar.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/laf/syntheticaBlueIce.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/laf/syntheticaBlueMoon.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/laf/syntheticaBlueSteel.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/laf/syntheticaMauveMetallic.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/laf/syntheticaOrangeMetallic.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/laf/syntheticaSilverMoon.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/laf/syntheticaSimple2D.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/laf/syntheticaSkyMetallic.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/laf/syntheticaWhiteVision.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/swingx.jar" sourcepath="ressourcen/code-ressourcen/swingx-1.0-src.zip">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/jd/ressourcen/code-ressourcen/swingx-1.0-javadoc.zip!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="ressourcen/libs/jna.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/laf/substance-swingx.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/laf/substance.jar" sourcepath="ressourcen/code-ressourcen/Substance_src.zip">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/jd/ressourcen/code-ressourcen/Substance_docs.zip!/docs"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="ressourcen/libs/commons-logging-1.1.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/ws-commons-util-1.0.2.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/xmlrpc-client-3.1.3.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/xmlrpc-common-3.1.3.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/xmlrpc-server-3.1.3.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/AppWorkUtils"/>
+	<classpathentry kind="lib" path="ressourcen/libs/laf/syntheticaBlackEye.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/laf/syntheticaGreenDream.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/image4j.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/dbus/debug-disable.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/dbus/hexdump.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/dbus/libdbus-java.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/dbus/unix.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs_ext/jpathwatch-0-92a.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/jpfm-fs.jar" sourcepath="ressourcen/code-ressourcen/jpfm-fs_src.zip"/>
+	<classpathentry kind="lib" path="ressourcen/libs/jpfm.jar" sourcepath="ressourcen/code-ressourcen/jpfm-src.zip"/>
+	<classpathentry kind="lib" path="ressourcen/libs_ext/fest-assert-1.2.jar" sourcepath="ressourcen/code-ressourcen/fest-assert-1.2-sources.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs_ext/fest-reflect-1.2.jar" sourcepath="ressourcen/code-ressourcen/fest-reflect-1.2-sources.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs_ext/fest-swing-1.2.jar" sourcepath="ressourcen/code-ressourcen/fest-swing-1.2-sources.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs_ext/fest-swing-junit-4.5-1.2.jar" sourcepath="ressourcen/code-ressourcen/fest-swing-junit-4.5-1.2-sources.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs_ext/fest-util-1.1.2.jar" sourcepath="ressourcen/code-ressourcen/fest-util-1.1.2-sources.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/jackson-core.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/jackson-mapper.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/svnkit.jar" sourcepath="ressourcen/code-ressourcen/svnkitsrc.zip"/>
+	<classpathentry kind="lib" path="ressourcen/libs/laf/trident.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs_ext/junit-4.8.2.jar" sourcepath="ressourcen/code-ressourcen/junit-4.8.2-src.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/flex-messaging-common.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/flex-messaging-core.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/sevenzipjbinding-AllPlatforms.jar"/>
+	<classpathentry kind="lib" path="ressourcen/libs/sevenzipjbinding.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
