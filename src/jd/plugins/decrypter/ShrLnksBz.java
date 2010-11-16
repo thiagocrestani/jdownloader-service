@@ -56,7 +56,7 @@ import jd.plugins.PluginForDecrypt;
 import jd.utils.JDUtilities;
 import jd.utils.locale.JDL;
 
-@DecrypterPlugin(revision = "$Revision: 12943 $", interfaceVersion = 2, names = { "share-links.biz" }, urls = { "http://[\\w\\.]*?(share-links\\.biz/_[0-9a-z]+|s2l\\.biz/[a-z0-9]+)" }, flags = { 0 })
+@DecrypterPlugin(revision = "$Revision: 12970 $", interfaceVersion = 2, names = { "share-links.biz" }, urls = { "http://[\\w\\.]*?(share-links\\.biz/_[0-9a-z]+|s2l\\.biz/[a-z0-9]+)" }, flags = { 0 })
 public class ShrLnksBz extends PluginForDecrypt {
 
     private static String                   host                   = "http://share-links.biz";
@@ -104,7 +104,7 @@ public class ShrLnksBz extends PluginForDecrypt {
             }
         }
         this.setBrowserExclusive();
-        this.br.forceDebug(true);
+        // this.br.setDebug(true);
         // Setup static Header
         this.br.setFollowRedirects(false);
         this.br.getHeaders().clear();
@@ -236,10 +236,15 @@ public class ShrLnksBz extends PluginForDecrypt {
                     final String fun = this.br.getRegex("eval(.*)\n").getMatch(0);
                     final String result = this.unpackJS(fun, 1);
                     if ((result + "").trim().length() != 0) {
-                        this.br.setFollowRedirects(false);
-                        this.br.getPage(result + "");
-                        final DownloadLink dl = this.createDownloadlink(this.br.getRedirectLocation());
-                        decryptedLinks.add(dl);
+                        if (result.contains("share-links\\.biz")) {
+                            this.br.setFollowRedirects(false);
+                            this.br.getPage(result + "");
+                            final DownloadLink dl = this.createDownloadlink(this.br.getRedirectLocation());
+                            decryptedLinks.add(dl);
+                        } else {
+                            final DownloadLink dl = this.createDownloadlink(result);
+                            decryptedLinks.add(dl);
+                        }
                         break;
                     } else {
                         throw new PluginException(LinkStatus.ERROR_PLUGIN_DEFECT);
